@@ -47,7 +47,12 @@ logger = TensorBoardLogger('tb_logs', name='kitti_seg')
 trainer = Trainer(logger=logger,
                   gpus=1,
                   min_epochs=1,
-                  max_epochs=20,
+                  max_epochs=1,
                   callbacks=[MyMonitor()],
                   log_every_n_steps=1)
-trainer.fit(model, datamodule=dm)
+# trainer.fit(model, datamodule=dm)
+trainer.validate(model,
+                 dm,
+                 ckpt_path='/home/bennie/bennie/\
+lightning-seg/tb_logs/kitti_seg/version_10/checkpoints/epoch=0-step=70.ckpt')
+# trainer.test(model, dm)

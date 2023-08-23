@@ -31,7 +31,7 @@ class UNetLightning(LightningModule):
 
         from pl_bolts.models.vision import SemSegment
 
-        model = UNetLightning(num_classes=19)
+        model = UNetLightning(num_classes=20)
         dm = KittiDataModule(data_dir='/path/to/kitti/')
 
         Trainer().fit(model, datamodule=dm)
@@ -43,7 +43,7 @@ class UNetLightning(LightningModule):
     """
 
     def __init__(self,
-                 num_classes: int = 19,
+                 num_classes: int = 20,
                  num_layers: int = 5,
                  features_start: int = 64,
                  bilinear: bool = False,
@@ -52,7 +52,8 @@ class UNetLightning(LightningModule):
                  **kwargs: Any) -> None:
         """
         Args:
-            num_classes: number of output classes (default 19)
+            num_classes: number of output classes (default 20)
+                0-18 is useful and idx=20 class is ignore or background.
             num_layers: number of layers in each side of U-net (default 5)
             features_start: number of features in first layer (default 64)
             bilinear: whether to use bilinear interpolation (True) or
@@ -113,9 +114,10 @@ class UNetLightning(LightningModule):
         # 在验证集上，模型的评估指标就不该是cross_entropy,或者可以添加其他的形式
         loss_val = F.cross_entropy(out, mask, ignore_index=self.ignore_index)
 
-        mask_pred = torch.argmax(out, dim=1)
-        self.valid_dice(mask_pred, mask)
-        # self.log('valid_dice', self.valid_dice, on_step=True, on_epoch=True)
+        # mask_pred = torch.argmax(out, dim=1)
+        # self.valid_dice(mask_pred, mask)
+
+        self.valid_dice(out, mask)
         return {'val_loss': loss_val, 'out': out}
 
     def validation_epoch_end(self, outputs):
